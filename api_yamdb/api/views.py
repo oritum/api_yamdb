@@ -10,10 +10,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.permissions import AdminOnlyPermission
 from api.serializers import (
+    CustomTokenObtainSerializer,
     NotAdminSerializer,
     SignupSerializer,
     UsersSerializer,
-    CustomTokenObtainSerializer,
 )
 from api.utils import generate_confirmation_code, send_confirmation_code
 from reviews.models import User
