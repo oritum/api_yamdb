@@ -1,13 +1,23 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth import get_user_model
 from django.db import models
-from api_yamdb.users.models import CustomUser
+
+import model_fields_params
+
+
+User = get_user_model()
 
 
 class Catregory(models.Model):
-    """Модель категории произведения"""
+    """Модель категории произведения."""
 
-    name = models.CharField(verbose_name='Категория', max_length=50)
-    slug = models.SlugField(verbose_name='Слаг категории', max_length=50)
+    name = models.CharField(
+        verbose_name='Категория',
+        max_length=model_fields_params.CATEGORY_NAME_LENGTH
+    )
+    slug = models.SlugField(
+        verbose_name='Слаг категории',
+        max_length=model_fields_params.CATEGORY_SLUG_LENGTH
+    )
 
     class Meta:
         verbose_name = 'Категория'
@@ -18,10 +28,16 @@ class Catregory(models.Model):
 
 
 class Genre(models.Model):
-    """Модель жанра произведения"""
+    """Модель жанра произведения."""
 
-    name = models.CharField(verbose_name='Жанр', max_length=50)
-    slug = models.SlugField(verbose_name='Слаг жанра', max_length=50)
+    name = models.CharField(
+        verbose_name='Жанр',
+        max_length=model_fields_params.GENRE_NAME_LENGTH
+    )
+    slug = models.SlugField(
+        verbose_name='Слаг жанра',
+        max_length=model_fields_params.GENRE_SLUG_LENGTH
+    )
 
     class Meta:
         verbose_name = 'Жанр'
@@ -33,20 +49,19 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    """Модель произведения"""
+    """Модель произведения."""
 
     name = models.CharField(
         verbose_name='Название произведения',
-        max_length= 100
+        max_length=model_fields_params.TITLE_NAME_LENGTH
     )
     year = models.IntegerField(verbose_name='Год выпуска произведения')
     rating = models.IntegerField(
         verbose_name='Рейтинг произведения',
         null=True
     )
-    description = models.CharField(
+    description = models.TextField(
         verbose_name='Описание',
-        max_length=300,
         blank=True,
         default='Нет описания'
     )
@@ -75,72 +90,7 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    """Промежуточная модель для связи произведений и жанров"""
+    """Промежуточная модель для связи произведений и жанров."""
 
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
-
-
-class Review(models.Model):
-    """Модель отзыва"""
-
-    title = models.ForeignKey(
-        Title,
-        on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name='Произведение',
-    )
-    text = models.TextField(
-        'Текст отзыва',
-        max_length=500
-    )
-    pub_date = models.DateTimeField(
-        verbose_name='Дата публикации',
-        auto_now_add=True
-    )
-    author = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name='Автор',
-    )
-    score = models.IntegerField(
-        verbose_name='Оценка',
-        help_text='Установите оценку произведению от 1 до 10',
-        validators=(MinValueValidator(1), MaxValueValidator(10),))
-
-    class Meta:
-        verbose_name = 'Отзыв'
-        verbose_name_plural = 'Отзывы'
-
-    def __str__(self):
-        return f'{self.text[:50]}...'
-
-
-class Comment(models.Model):
-    """Модель комментария к отзыву"""
-
-    review = models.ForeignKey(
-        Review,
-        on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Отзыв',
-    )
-    author = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Автор',
-    )
-    text = models.TextField(verbose_name='Текст комментария', max_length=500)
-    pub_date = models.DateTimeField(
-        verbose_name='Дата публикации',
-        auto_now_add=True
-    )
-
-    class Meta:
-        verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
-
-    def __str__(self):
-        return f'{self.text[:50]}...'
