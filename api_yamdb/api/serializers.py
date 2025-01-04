@@ -34,7 +34,7 @@ class AdminSerializer(BaseUserSerializer):
     """Сериализатор для пользователя с правами администратора."""
 
 
-class NotAdminSerializer(ModelSerializer):
+class NotAdminSerializer(BaseUserSerializer):
     """Сериализатор для пользователя без прав администратора."""
 
     class Meta(BaseUserSerializer.Meta):
