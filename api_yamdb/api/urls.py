@@ -1,12 +1,12 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from api.views import CustomTokenObtainView, SignupView, UsersViewSet
+from api.views import CustomTokenObtainView, SignupView, UsersManagementViewSet
 
 app_name = 'api'
 
 router = SimpleRouter()
-router.register('users', UsersViewSet, basename='users')
+router.register('users', UsersManagementViewSet, basename='users')
 
 v1_urls = [
     path('auth/signup/', SignupView.as_view(), name='signup'),

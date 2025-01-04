@@ -13,6 +13,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customuser',
             name='bio',
-            field=models.TextField(blank=True, null=True, verbose_name='Биография'),
+            field=models.TextField(
+                blank=True, null=True, verbose_name='Биография'
+            ),
         ),
     ]

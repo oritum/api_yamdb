@@ -1,11 +1,20 @@
 """Валидаторы для моделей приложения users."""
 
-from django.core.validators import RegexValidator
+import re
 
-username_validator = RegexValidator(
-    regex=r'^(?!me$)[\w.@+-]+\Z',
-    message=(
-        'Имя пользователя может содержать только буквы, цифры и символы '
-        '@/./+/-/_ и не может быть "me"'
-    ),
-)
+from django.core.exceptions import ValidationError
+
+
+def validate_username(value: str) -> str:
+    """Валидация для поля username."""
+    if value == 'me':
+        raise ValidationError(
+            'Использование имени пользователя "me" запрещено.'
+        )
+    pattern = r'^[\w.@+-]+\Z'
+    if not re.match(pattern, value):
+        raise ValidationError(
+            'Имя пользователя может содержать только буквы, цифры и символы '
+            '@/./+/-/_'
+        )
+    return value

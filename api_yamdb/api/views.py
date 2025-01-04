@@ -1,105 +1,102 @@
+from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from rest_framework.mixins import CreateModelMixin
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.tokens import AccessToken
 
 from api.permissions import AdminOnlyPermission
 from api.serializers import (
+    AdminSerializer,
     CustomTokenObtainSerializer,
     NotAdminSerializer,
     SignupSerializer,
-    UsersSerializer,
 )
-from api.utils import generate_confirmation_code, send_confirmation_code
+from api.utils import send_confirmation_code
 from reviews.models import User
 
 
-class UsersViewSet(ModelViewSet):
+class UsersManagementViewSet(ModelViewSet):
+    """
+    ViewSet для управления пользователями.
+    """
+
     queryset = User.objects.all()
-    serializer_class = UsersSerializer
+    serializer_class = AdminSerializer
     permission_classes = (
         IsAuthenticated,
-        # AdminOnlyPermission,
+        AdminOnlyPermission,
     )
     lookup_field = 'username'
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
 
     @action(
-        methods=['GET', 'PATCH'],
+        methods=(
+            'GET',
+            'PATCH',
+        ),
         detail=False,
         permission_classes=(IsAuthenticated,),
         url_path='me',
     )
-    def get_current_user_info(self, request):
+    def get_user(self, request):
+        serializer_class = (
+            AdminSerializer if request.user.is_admin else NotAdminSerializer
+        )
         if request.method == 'PATCH':
-            serializer_class = (
-                UsersSerializer
-                if request.user.is_admin
-                else NotAdminSerializer
-            )
             serializer = serializer_class(
                 request.user, data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-
-        serializer = UsersSerializer(request.user)
+        serializer = serializer_class(request.user)
         return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            return Response(
+                {'error': 'метод PUT не разрешён'},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
+        return super().update(request, *args, **kwargs)
 
 
 class SignupView(APIView):
-    """View для создания пользователя и отправки кода подтверждения."""
-
-    permission_classes = (AllowAny,)
+    """View для регистрации пользователя и получения кода подтверждения."""
 
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        confirmation_code = generate_confirmation_code()
-        user.confirmation_code = confirmation_code
-        user.save()
+        user, _ = User.objects.get_or_create(**serializer.validated_data)
         send_confirmation_code(
-            email=user.email, confirmation_code=confirmation_code
+            user.email, default_token_generator.make_token(user)
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CustomTokenObtainView(APIView):
-    """View для получения токена."""
-
-    permission_classes = (AllowAny,)
+    """View для получения токена по username и confirmation_code."""
 
     def post(self, request):
-        username = request.data.get('username')
-        confirmation_code = request.data.get('confirmation_code')
-
-        if not username or not confirmation_code:
+        serializer = CustomTokenObtainSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(
+            User, username=serializer.validated_data.get('username')
+        )
+        if not default_token_generator.check_token(
+            user, serializer.validated_data.get('confirmation_code')
+        ):
             return Response(
-                {'error': 'не указан username или confirmation_code'},
+                {'confirmation_code': 'неверный confirmation_code'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return Response(
-                {'error': 'Пользователь не найден'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        if user.confirmation_code != confirmation_code:
-            return Response(
-                {'error': 'Неверный confirmation_code'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        refresh = RefreshToken.for_user(user)
         return Response(
-            {'refresh': str(refresh), 'access': str(refresh.access_token)},
+            {'token': str(AccessToken.for_user(user))},
             status=status.HTTP_200_OK,
         )
