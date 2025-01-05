@@ -24,7 +24,7 @@ class ReviewAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    """Регистрация модели Commentв админке."""
+    """Регистрация модели Comment в админке."""
     list_display = (
         'review',
         'text',
