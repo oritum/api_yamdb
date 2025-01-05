@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-import model_fields_params
-
+from api_yamdb.reviews.constants import (CATEGORY_NAME_LENGTH,
+    CATEGORY_SLUG_LENGTH, GENRE_NAME_LENGTH, GENRE_SLUG_LENGTH,
+    TITLE_NAME_LENGTH)
 
 User = get_user_model()
 
@@ -12,11 +13,11 @@ class Catregory(models.Model):
 
     name = models.CharField(
         verbose_name='Категория',
-        max_length=model_fields_params.CATEGORY_NAME_LENGTH
+        max_length=CATEGORY_NAME_LENGTH
     )
     slug = models.SlugField(
         verbose_name='Слаг категории',
-        max_length=model_fields_params.CATEGORY_SLUG_LENGTH
+        max_length=CATEGORY_SLUG_LENGTH
     )
 
     class Meta:
@@ -32,11 +33,11 @@ class Genre(models.Model):
 
     name = models.CharField(
         verbose_name='Жанр',
-        max_length=model_fields_params.GENRE_NAME_LENGTH
+        max_length=GENRE_NAME_LENGTH
     )
     slug = models.SlugField(
         verbose_name='Слаг жанра',
-        max_length=model_fields_params.GENRE_SLUG_LENGTH
+        max_length=GENRE_SLUG_LENGTH
     )
 
     class Meta:
@@ -53,7 +54,7 @@ class Title(models.Model):
 
     name = models.CharField(
         verbose_name='Название произведения',
-        max_length=model_fields_params.TITLE_NAME_LENGTH
+        max_length=TITLE_NAME_LENGTH
     )
     year = models.IntegerField(verbose_name='Год выпуска произведения')
     rating = models.IntegerField(
