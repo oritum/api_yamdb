@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import Review, Comment
+from reviews.models import Review, Comment
 
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    """Админка для Review."""
+    """Регистрация модели Review в админке."""
     list_display = (
         'title',
         'text',
@@ -24,7 +24,7 @@ class ReviewAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    """Админка для Comment."""
+    """Регистрация модели Commentв админке."""
     list_display = (
         'review',
         'text',

@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from reviews.constants import RATING_RANGE
+
 User = get_user_model()
 
 
@@ -12,7 +14,7 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Произведение'
     )
-    text = models.TextField(verbose_name='Текст отзыва')
+    text = models.TextField('Текст отзыва')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -21,7 +23,7 @@ class Review(models.Model):
     )
     score = models.IntegerField(
         verbose_name='Оценка',
-        choices=[(i, i) for i in range(1, 11)]
+        choices=[(i, i) for i in range(*RATING_RANGE)]
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -50,7 +52,7 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='Отзыв'
     )
-    text = models.TextField(verbose_name='Текст комментария')
+    text = models.TextField('Текст комментария')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
