@@ -12,7 +12,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
                 or obj.author == request.user)
 
 
-class IsModeratorPermission(permissions.BasePermission):
+class IsModeratorAdminPermission(permissions.BasePermission):
     """
     Доступ для админа и модератора удялять, изменять
     любые отзывы и комментарии.
