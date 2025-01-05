@@ -4,18 +4,6 @@ from django.db import models
 User = get_user_model()
 
 
-class Title(models.Model):
-    pass
-
-
-class Genre(models.Model):
-    pass
-
-
-class Category(models.Model):
-    pass
-
-
 class Review(models.Model):
     """Модель для отзывов."""
     title = models.ForeignKey(
@@ -48,10 +36,10 @@ class Review(models.Model):
                 fields=('title', 'author', ),
                 name='one_review'
             )]
-        ordering = ('pub_date',)
+        ordering = ('-pub_date',)
 
     def __str__(self):
-        return f'Отзыв от {self.author} на {self.title}'
+        return f'{self.author}: {self.text}'
 
 
 class Comment(models.Model):
@@ -79,4 +67,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return f'{self.author}: {self.review}'
+        return f'{self.author}: {self.text}'

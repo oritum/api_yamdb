@@ -10,7 +10,6 @@ class ReviewAdmin(admin.ModelAdmin):
         'text',
         'author',
         'score',
-        'pub_date'
     )
     list_filter = (
         'author',
