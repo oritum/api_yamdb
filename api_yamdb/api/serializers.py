@@ -1,5 +1,7 @@
 """Сериализаторы для приложения api."""
 
+from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import get_object_or_404
 from rest_framework.serializers import (
     CharField,
     EmailField,
@@ -8,10 +10,7 @@ from rest_framework.serializers import (
 )
 
 from reviews.models import User
-from users.constants import (
-    EMAIL_MAX_LENGTH,
-    USERNAME_MAX_LENGTH,
-)
+from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 from users.validators import validate_username
 
 
@@ -41,7 +40,7 @@ class NotAdminSerializer(BaseUserSerializer):
         read_only_fields = ('role',)
 
 
-class SignupSerializer(ModelSerializer):
+class SignupSerializer(BaseUserSerializer):
     """Сериализатор для создания объекта класса User."""
 
     username = CharField(
@@ -49,8 +48,7 @@ class SignupSerializer(ModelSerializer):
     )
     email = EmailField(max_length=EMAIL_MAX_LENGTH)
 
-    class Meta:
-        model = User
+    class Meta(BaseUserSerializer.Meta):
         fields = ('email', 'username')
 
     def validate(self, data):
@@ -77,12 +75,21 @@ class SignupSerializer(ModelSerializer):
         return data
 
 
-class CustomTokenObtainSerializer(ModelSerializer):
+class CustomTokenObtainSerializer(BaseUserSerializer):
     """Сериализатор для получения токена."""
 
     username = CharField(required=True)
     confirmation_code = CharField(required=True)
 
-    class Meta:
-        model = User
+    class Meta(BaseUserSerializer.Meta):
         fields = ('username', 'confirmation_code')
+
+    def validate(self, data):
+        username = data.get('username')
+        confirmation_code = data.get('confirmation_code')
+        user = get_object_or_404(User, username=username)
+        if not default_token_generator.check_token(user, confirmation_code):
+            raise ValidationError(
+                {'confiration_code': 'неверный confirmation_code'}
+            )
+        return data

@@ -89,13 +89,6 @@ class CustomTokenObtainView(APIView):
         user = get_object_or_404(
             User, username=serializer.validated_data.get('username')
         )
-        if not default_token_generator.check_token(
-            user, serializer.validated_data.get('confirmation_code')
-        ):
-            return Response(
-                {'confirmation_code': 'неверный confirmation_code'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         return Response(
             {'token': str(AccessToken.for_user(user))},
             status=status.HTTP_200_OK,
