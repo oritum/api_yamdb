@@ -1,4 +1,6 @@
+from datetime import timedelta
 from pathlib import Path
+
 from decouple import config
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -27,7 +29,6 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'reviews.apps.ReviewsConfig',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
@@ -54,6 +56,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'api_yamdb.urls'
 
 TEMPLATES_DIR = BASE_DIR / 'templates'
+
 
 TEMPLATES = [
     {
@@ -94,6 +97,19 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10,
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
 
 LANGUAGE_CODE = 'en-us'
 
