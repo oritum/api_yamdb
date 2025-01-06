@@ -69,7 +69,7 @@ class Title(models.Model):
         through='GenreTitle',
     )
     category = models.ForeignKey(
-        Catregory,
+        Category,
         verbose_name='Категория',
         on_delete=models.CASCADE,
         related_name='titles',
