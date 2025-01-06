@@ -13,7 +13,7 @@ from reviews.constants import (
 User = get_user_model()
 
 
-class Catregory(models.Model):
+class Category(models.Model):
     """Модель категории произведения."""
 
     name = models.CharField(
