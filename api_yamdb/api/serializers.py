@@ -112,11 +112,11 @@ class ReviewSerializer(ModelSerializer):
 
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = ('author', 'title',)
 
     def validate_score(self, value):
-        if not 1 <= value <= 10:
+        if 0 > value > 10:
             raise ValidationError(
                 'Оценка должна быть от 1 до 10'
             )
@@ -136,5 +136,5 @@ class CommentSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ('review',)

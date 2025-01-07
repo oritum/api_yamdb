@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from reviews.constants import RATING_RANGE
 
 User = get_user_model()
 
@@ -23,7 +22,7 @@ class Review(models.Model):
     )
     score = models.IntegerField(
         verbose_name='Оценка',
-        choices=[(i, i) for i in range(*RATING_RANGE)]
+        choices=[(i, i) for i in range(1, 11)]
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,

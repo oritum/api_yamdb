@@ -1,1 +1,1 @@
-RATING_RANGE = [1, 11]
+
