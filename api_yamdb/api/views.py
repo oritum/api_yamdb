@@ -9,15 +9,21 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api.permissions import AdminOnlyPermission
+from api.permissions import (
+    AdminOnlyPermission,
+    IsAuthorOrReadOnly,
+    IsModeratorAdminPermission,
+)
 from api.serializers import (
     AdminSerializer,
     CustomTokenObtainSerializer,
     NotAdminSerializer,
     SignupSerializer,
+    CommentSerializer,
+    ReviewSerializer,
 )
 from api.utils import send_confirmation_code
-from reviews.models import User
+from reviews.models import User, Review, Title
 
 
 class UsersManagementViewSet(ModelViewSet):
@@ -93,3 +99,33 @@ class CustomTokenObtainView(APIView):
             {'token': str(AccessToken.for_user(user))},
             status=status.HTTP_200_OK,
         )
+
+
+class ReviewViewSet(ModelViewSet):
+    """Получение списка всех отзывов на произведение."""
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
+
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_title())
+
+
+class CommentViewSet(ModelViewSet):
+    """Получение списка всех комментариев на отзыв."""
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
+
+    def get_review(self):
+        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())

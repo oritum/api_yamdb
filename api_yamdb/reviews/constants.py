@@ -1,3 +1,4 @@
+
 """Константы для моделей приложения reviews."""
 
 CATEGORY_NAME_LENGTH = 256
@@ -10,4 +11,3 @@ GENRE_SLUG_LENGTH = 50
 
 TITLE_NAME_LENGTH = 256
 
-RATING_RANGE = [1, 11]
