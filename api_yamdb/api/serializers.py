@@ -10,9 +10,11 @@ from rest_framework.serializers import (
     SlugRelatedField,
     ValidationError,
     CurrentUserDefault,
+    SerializerMethodField,
 )
+from django.db.models import Avg
 
-from reviews.models import User, Review, Comment
+from reviews.models import User, Review, Comment, Title
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 from users.validators import validate_username
 
@@ -99,7 +101,7 @@ class CustomTokenObtainSerializer(BaseUserSerializer):
 
 
 class ReviewSerializer(ModelSerializer):
-    """Серилизатор для оценка произведений."""
+    """Серилизатор для оценок произведений."""
     title = SlugRelatedField(
         slug_field='name',
         read_only=True
@@ -138,3 +140,24 @@ class CommentSerializer(ModelSerializer):
         model = Comment
         fields = ('text', 'author', 'pub_date', 'review')
         read_only_fields = ('author', 'review', 'pub_date')
+
+
+class TitleSerializer(ModelSerializer):
+    """
+    Серилизатор для произведений
+    и расчета рейтинга.
+    """
+    rating = SerializerMethodField()
+
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'description',
+                  'genre', 'category', 'rating')
+        read_only_fields = ('rating',)
+
+    def get_rating(self, obj):
+        try:
+            rating = obj.reviews.aggregate(Avg('score'))
+            return rating.get('score__avg')
+        except TypeError:
+            return None
