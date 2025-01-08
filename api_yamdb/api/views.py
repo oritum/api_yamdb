@@ -1,5 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -21,6 +22,7 @@ from api.serializers import (
     SignupSerializer,
     CommentSerializer,
     ReviewSerializer,
+    TitleSerializer,
 )
 from api.utils import send_confirmation_code
 from reviews.models import User, Review, Title
@@ -129,3 +131,8 @@ class CommentViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
+
+
+class TitleViewSet(ModelViewSet):
+    """ViewSet для произведений и рейтинга."""
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))

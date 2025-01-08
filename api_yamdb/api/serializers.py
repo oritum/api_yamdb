@@ -10,7 +10,7 @@ from rest_framework.serializers import (
     SlugRelatedField,
     ValidationError,
     CurrentUserDefault,
-    SerializerMethodField,
+    IntegerField,
 )
 from django.db.models import Avg
 
@@ -143,21 +143,13 @@ class CommentSerializer(ModelSerializer):
 
 
 class TitleSerializer(ModelSerializer):
-    """
-    Серилизатор для произведений
-    и расчета рейтинга.
-    """
-    rating = SerializerMethodField()
+    """Серилизатор для произведений для рейтинга."""
+    rating = IntegerField()
 
     class Meta:
         model = Title
         fields = ('name', 'year', 'description',
                   'genre', 'category', 'rating')
-        read_only_fields = ('rating',)
 
-    def get_rating(self, obj):
-        try:
-            rating = obj.reviews.aggregate(Avg('score'))
-            return rating.get('score__avg')
-        except TypeError:
-            return None
+        read_only_fields = ('name', 'year', 'description',
+                            'genre', 'category', 'rating')
