@@ -11,7 +11,7 @@ YaMBd - API-платформа для сбора отзывов пользова
 * *Дмитрий Корноухов (backend developer):* [Github](https://github.com/jpgIKenpachi)
 * *Олег Ритум (backend developer):* [Github](https://github.com/oritum)
 
-  Тимлид: *Олег Ритум*
+  Тимлид: *Олег Ритум.*
 
   Год разработки: *2025.*
 
