@@ -153,6 +153,7 @@ class CategorySerializer(ModelSerializer):
 
 
 class GenreSerializer(ModelSerializer):
+    """Сериализатор для жанров произведений."""
 
     class Meta:
         model = Genre

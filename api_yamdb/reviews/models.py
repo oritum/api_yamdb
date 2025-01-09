@@ -18,10 +18,10 @@ class Category(models.Model):
     """Модель категории произведения."""
 
     name = models.CharField(
-        verbose_name='Категория', max_length=CATEGORY_NAME_LENGTH
+        'Категория', max_length=CATEGORY_NAME_LENGTH
     )
     slug = models.SlugField(
-        verbose_name='Слаг категории',
+        'Слаг категории',
         max_length=CATEGORY_SLUG_LENGTH,
         unique=True
     )
@@ -39,7 +39,7 @@ class Genre(models.Model):
 
     name = models.CharField(verbose_name='Жанр', max_length=GENRE_NAME_LENGTH)
     slug = models.SlugField(
-        verbose_name='Слаг жанра',
+        'Слаг жанра',
         max_length=GENRE_SLUG_LENGTH,
         unique=True
     )
@@ -57,11 +57,11 @@ class Title(models.Model):
     """Модель произведения."""
 
     name = models.CharField(
-        verbose_name='Название произведения', max_length=TITLE_NAME_LENGTH
+        'Название произведения', max_length=TITLE_NAME_LENGTH
     )
     year = models.IntegerField(verbose_name='Год выпуска произведения')
     description = models.TextField(
-        verbose_name='Описание', blank=True, default='Нет описания'
+        'Описание', blank=True, default='Нет описания'
     )
     genre = models.ManyToManyField(
         Genre,
