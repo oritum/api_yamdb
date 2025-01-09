@@ -2,6 +2,7 @@
 
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.serializers import (
     CharField,
     EmailField,
@@ -10,9 +11,10 @@ from rest_framework.serializers import (
     SlugRelatedField,
     ValidationError,
     CurrentUserDefault,
+    IntegerField
 )
 
-from reviews.models import User, Review, Comment
+from reviews.models import User, Review, Comment, Category, Genre, Title
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 from users.validators import validate_username
 
@@ -138,3 +140,70 @@ class CommentSerializer(ModelSerializer):
         model = Comment
         fields = ('text', 'author', 'pub_date', 'review')
         read_only_fields = ('author', 'review', 'pub_date')
+
+
+class CategorySerializer(ModelSerializer):
+    """Сериализатор для категорий произведений."""
+
+    class Meta:
+        model = Category
+        lookup_field = 'slug'
+        fields = ('name', 'slug')
+
+
+class GenreSerializer(ModelSerializer):
+
+    class Meta:
+        model = Genre
+        lookup_field = 'slug'
+        fields = ('name', 'slug')
+
+
+class TitleReadSerializer(ModelSerializer):
+    """Сериализатор для чтения произведений."""
+
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    rating = IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
+
+
+class TitleCreateUpdateDeleteSerializer(ModelSerializer):
+    """Сериализатор для создания, изменения и удаления произведений."""
+
+    category = SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+    genre = SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        many=True
+    )
+
+    class Meta:
+        model = Title
+        fields = (
+            'name',
+            'year',
+            'description',
+            'genre',
+            'category'
+        )
+
+    def validate_year(self, value):
+        if value > timezone.now().year:
+            return ValidationError('Нельзя добавлять произведения, которые '
+                                   'еще не вышли')
+        return value

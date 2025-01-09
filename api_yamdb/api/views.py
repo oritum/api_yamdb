@@ -1,5 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -9,10 +11,12 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api.filters import TitleFilterSet
+from api.mixins import GetPostDeleteViewSet
 from api.permissions import (
     AdminOnlyPermission,
     IsAuthorOrReadOnly,
-    IsModeratorAdminPermission,
+    IsModeratorAdminPermission, IsAdminOrReadOnly,
 )
 from api.serializers import (
     AdminSerializer,
@@ -20,10 +24,11 @@ from api.serializers import (
     NotAdminSerializer,
     SignupSerializer,
     CommentSerializer,
-    ReviewSerializer,
+    ReviewSerializer, CategorySerializer, GenreSerializer, TitleReadSerializer,
+    TitleCreateUpdateDeleteSerializer,
 )
 from api.utils import send_confirmation_code
-from reviews.models import User, Review, Title
+from reviews.models import User, Review, Title, Category, Genre, GenreTitle
 
 
 class UsersManagementViewSet(ModelViewSet):
@@ -129,3 +134,48 @@ class CommentViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
+
+
+class CategoryViewSet(GetPostDeleteViewSet):
+    """
+    ViewSet для получения списка категорий (доступно для всех) и создания,
+    изменения и удаления категории (доступно только админу).
+    """
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+
+
+class GenreViewSet(GetPostDeleteViewSet):
+    """
+    ViewSet для получения списка жанров (доступно для всех) и создания,
+    изменения и удаления жанра (доступно только админу).
+    """
+
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+
+
+class TitleViewSet(ModelViewSet):
+
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilterSet
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleReadSerializer
+        return TitleCreateUpdateDeleteSerializer
+
+    def perform_create(self, serializer):
+        response = super().perform_create(serializer)
+        return response
