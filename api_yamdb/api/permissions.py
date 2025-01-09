@@ -27,6 +27,7 @@ class IsModeratorAdminPermission(BasePermission):
     """
     Доступ для админа и модератора удялять, изменять
     любые отзывы и комментарии.
+    Автору только свои.
     """
 
     def has_permission(self, request, view):
@@ -35,6 +36,7 @@ class IsModeratorAdminPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         return (
             request.method in SAFE_METHODS
+            or obj.author == request.user
             or request.user.is_moderator
             or request.user.is_admin
         )
