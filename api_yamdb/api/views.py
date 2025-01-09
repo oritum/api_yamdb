@@ -104,7 +104,11 @@ class CustomTokenObtainView(APIView):
 
 
 class ReviewViewSet(ModelViewSet):
-    """Получение списка всех отзывов на произведение."""
+    """
+    ViewSet для получения списка отзывов на произведение,
+    создания нового отзыва,
+    обновления и удаления существующего отзыва.
+    """
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
 
@@ -119,7 +123,12 @@ class ReviewViewSet(ModelViewSet):
 
 
 class CommentViewSet(ModelViewSet):
-    """Получение списка всех комментариев на отзыв."""
+    """
+    ViewSet для получения списка комментариев на отзыв,
+    создания нового комментария,
+    обновления и удаления существующего комментария.
+    """
+
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
 
