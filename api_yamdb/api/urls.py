@@ -15,17 +15,14 @@ app_name = 'api'
 router = SimpleRouter()
 router.register('users', UsersManagementViewSet, basename='users')
 router.register('titles', TitleViewSet, basename='titles')
-
-reviews_router = SimpleRouter()
-reviews_router.register(
-    r'reviews',
+router.register(
+    r'titles/(?P<title_id>[\d]+)/reviews',
     ReviewViewSet,
     basename='reviews'
 )
 
-comments_router = SimpleRouter()
-comments_router.register(
-    r'comments',
+router.register(
+    r'titles/(?P<title_id>[\d]+)/reviews/(?P<review_id>[\d]+)/comments',
     CommentViewSet,
     basename='comments'
 )
@@ -34,8 +31,6 @@ v1_urls = [
     path('auth/signup/', SignupView.as_view(), name='signup'),
     path('auth/token/', CustomTokenObtainView.as_view(), name='token_obtain'),
     path('', include(router.urls)),
-    path('titles/<int:title_id>/', include(reviews_router.urls)),
-    path('reviews/<int:review_id>/', include(comments_router.urls)),
 ]
 
 urlpatterns = [

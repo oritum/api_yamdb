@@ -132,7 +132,3 @@ class CommentViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
 
-
-class TitleViewSet(ModelViewSet):
-    """ViewSet для произведений и рейтинга."""
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))

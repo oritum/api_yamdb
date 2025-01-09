@@ -142,14 +142,3 @@ class CommentSerializer(ModelSerializer):
         read_only_fields = ('author', 'review', 'pub_date')
 
 
-class TitleSerializer(ModelSerializer):
-    """Серилизатор для произведений для рейтинга."""
-    rating = IntegerField()
-
-    class Meta:
-        model = Title
-        fields = ('name', 'year', 'description',
-                  'genre', 'category', 'rating')
-
-        read_only_fields = ('name', 'year', 'description',
-                            'genre', 'category', 'rating')
