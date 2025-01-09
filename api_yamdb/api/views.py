@@ -45,6 +45,12 @@ class UsersManagementViewSet(ModelViewSet):
     lookup_field = 'username'
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
+    http_method_names = (
+        'get',
+        'post',
+        'patch',
+        'delete',
+    )
 
     @action(
         methods=(
@@ -68,14 +74,6 @@ class UsersManagementViewSet(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = serializer_class(request.user)
         return Response(serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            return Response(
-                {'error': 'метод PUT не разрешён'},
-                status=status.HTTP_405_METHOD_NOT_ALLOWED,
-            )
-        return super().update(request, *args, **kwargs)
 
 
 class SignupView(APIView):
@@ -107,7 +105,12 @@ class CustomTokenObtainView(APIView):
 
 
 class ReviewViewSet(ModelViewSet):
-    """Получение списка всех отзывов на произведение."""
+    """
+    ViewSet для получения списка отзывов на произведение,
+    создания нового отзыва,
+    обновления и удаления существующего отзыва.
+    """
+
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
 
@@ -122,7 +125,12 @@ class ReviewViewSet(ModelViewSet):
 
 
 class CommentViewSet(ModelViewSet):
-    """Получение списка всех комментариев на отзыв."""
+    """
+    ViewSet для получения списка комментариев на отзыв,
+    создания нового комментария,
+    обновления и удаления существующего комментария.
+    """
+
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
 

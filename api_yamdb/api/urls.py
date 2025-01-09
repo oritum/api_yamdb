@@ -1,8 +1,16 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from api.views import CustomTokenObtainView, SignupView, \
-    UsersManagementViewSet, GenreViewSet, CategoryViewSet, TitleViewSet
+from api.views import (
+    CustomTokenObtainView,
+    SignupView,
+    UsersManagementViewSet,
+    ReviewViewSet,
+    CommentViewSet,
+    GenreViewSet,
+    CategoryViewSet,
+    TitleViewSet
+)
 
 app_name = 'api'
 
@@ -11,6 +19,17 @@ router.register('users', UsersManagementViewSet, basename='users')
 router.register('genres', GenreViewSet, basename='genres')
 router.register('categories', CategoryViewSet, basename='categories')
 router.register('titles', TitleViewSet, basename='titles')
+router.register(
+    r'titles/(?P<title_id>[\d]+)/reviews',
+    ReviewViewSet,
+    basename='reviews'
+)
+
+router.register(
+    r'titles/(?P<title_id>[\d]+)/reviews/(?P<review_id>[\d]+)/comments',
+    CommentViewSet,
+    basename='comments'
+)
 
 v1_urls = [
     path('auth/signup/', SignupView.as_view(), name='signup'),

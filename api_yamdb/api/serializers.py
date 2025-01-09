@@ -11,8 +11,9 @@ from rest_framework.serializers import (
     SlugRelatedField,
     ValidationError,
     CurrentUserDefault,
-    IntegerField
+    IntegerField,
 )
+from django.db.models import Avg
 
 from reviews.models import User, Review, Comment, Category, Genre, Title
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
@@ -101,7 +102,7 @@ class CustomTokenObtainSerializer(BaseUserSerializer):
 
 
 class ReviewSerializer(ModelSerializer):
-    """Серилизатор для оценка произведений."""
+    """Серилизатор для оценок произведений."""
     title = SlugRelatedField(
         slug_field='name',
         read_only=True
