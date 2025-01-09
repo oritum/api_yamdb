@@ -16,7 +16,8 @@ from api.mixins import GetPostDeleteViewSet
 from api.permissions import (
     AdminOnlyPermission,
     IsAuthorOrReadOnly,
-    IsModeratorAdminPermission, IsAdminOrReadOnly,
+    IsModeratorAdminPermission,
+    IsAdminOrReadOnly,
 )
 from api.serializers import (
     AdminSerializer,
@@ -24,11 +25,14 @@ from api.serializers import (
     NotAdminSerializer,
     SignupSerializer,
     CommentSerializer,
-    ReviewSerializer, CategorySerializer, GenreSerializer, TitleReadSerializer,
+    ReviewSerializer,
+    CategorySerializer,
+    GenreSerializer,
+    TitleReadSerializer,
     TitleCreateUpdateDeleteSerializer,
 )
 from api.utils import send_confirmation_code
-from reviews.models import User, Review, Title, Category, Genre, GenreTitle
+from reviews.models import User, Review, Title, Category, Genre
 
 
 class UsersManagementViewSet(ModelViewSet):
@@ -185,6 +189,13 @@ class TitleViewSet(ModelViewSet):
             return TitleReadSerializer
         return TitleCreateUpdateDeleteSerializer
 
-    def perform_create(self, serializer):
-        response = super().perform_create(serializer)
-        return response
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            TitleReadSerializer(
+                self.queryset.get(pk=serializer.instance.pk)
+            ).data,
+            status=status.HTTP_201_CREATED,
+        )

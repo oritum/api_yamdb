@@ -9,11 +9,9 @@ from rest_framework.serializers import (
     ModelSerializer,
     ValidationError,
     SlugRelatedField,
-    ValidationError,
     CurrentUserDefault,
     IntegerField,
 )
-from django.db.models import Avg
 
 from reviews.models import User, Review, Comment, Category, Genre, Title
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
@@ -103,14 +101,10 @@ class CustomTokenObtainSerializer(BaseUserSerializer):
 
 class ReviewSerializer(ModelSerializer):
     """Серилизатор для оценок произведений."""
-    title = SlugRelatedField(
-        slug_field='name',
-        read_only=True
-    )
+
+    title = SlugRelatedField(slug_field='name', read_only=True)
     author = SlugRelatedField(
-        slug_field='username',
-        default=CurrentUserDefault(),
-        read_only=True
+        slug_field='username', default=CurrentUserDefault(), read_only=True
     )
 
     class Meta:
@@ -120,22 +114,15 @@ class ReviewSerializer(ModelSerializer):
 
     def validate_score(self, value):
         if 0 > value > 10:
-            raise ValidationError(
-                'Оценка должна быть от 1 до 10'
-            )
+            raise ValidationError('Оценка должна быть от 1 до 10')
         return value
 
 
 class CommentSerializer(ModelSerializer):
     """Серилизатор для комментариев на отзыв."""
-    review = SlugRelatedField(
-        slug_field='text',
-        read_only=True
-    )
-    author = SlugRelatedField(
-        slug_field='username',
-        read_only=True
-    )
+
+    review = SlugRelatedField(slug_field='text', read_only=True)
+    author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
         model = Comment
@@ -176,7 +163,7 @@ class TitleReadSerializer(ModelSerializer):
             'rating',
             'description',
             'genre',
-            'category'
+            'category',
         )
 
 
@@ -184,14 +171,14 @@ class TitleCreateUpdateDeleteSerializer(ModelSerializer):
     """Сериализатор для создания, изменения и удаления произведений."""
 
     category = SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all()
+        slug_field='slug', queryset=Category.objects.all()
     )
     genre = SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
-        many=True
+        many=True,
     )
+    rating = IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -199,13 +186,28 @@ class TitleCreateUpdateDeleteSerializer(ModelSerializer):
             'id',
             'name',
             'year',
+            'rating',
             'description',
             'genre',
-            'category'
+            'category',
         )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['category'] = CategorySerializer(instance.category).data
+        representation['genre'] = GenreSerializer(
+            instance.genre, many=True
+        ).data
+        return representation
 
     def validate_year(self, value):
         if value > timezone.now().year:
-            return ValidationError('Нельзя добавлять произведения, которые '
-                                   'еще не вышли')
+            raise ValidationError(
+                'Нельзя добавлять произведения, которые ' 'еще не вышли'
+            )
+        return value
+
+    def validate_genre(self, value):
+        if not value:
+            raise ValidationError('Поле genre не может быть пустым.')
         return value
