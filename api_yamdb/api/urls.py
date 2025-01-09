@@ -5,7 +5,6 @@ from api.views import (
     CustomTokenObtainView,
     SignupView,
     UsersManagementViewSet,
-    TitleViewSet,
     ReviewViewSet,
     CommentViewSet,
 )
@@ -14,7 +13,6 @@ app_name = 'api'
 
 router = SimpleRouter()
 router.register('users', UsersManagementViewSet, basename='users')
-router.register('titles', TitleViewSet, basename='titles')
 router.register(
     r'titles/(?P<title_id>[\d]+)/reviews',
     ReviewViewSet,
