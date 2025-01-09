@@ -13,7 +13,6 @@ from rest_framework.serializers import (
     CurrentUserDefault,
     IntegerField,
 )
-from django.db.models import Avg
 
 from reviews.models import User, Review, Comment, Category, Genre, Title
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
@@ -102,7 +101,10 @@ class CustomTokenObtainSerializer(BaseUserSerializer):
 
 
 class ReviewSerializer(ModelSerializer):
-    """Серилизатор для оценок произведений."""
+    """
+    Серилизатор для оценок произведений, проверки валидности оценки
+    и единичного отзыва на произведение.
+    """
     title = SlugRelatedField(
         slug_field='name',
         read_only=True
@@ -124,6 +126,19 @@ class ReviewSerializer(ModelSerializer):
                 'Оценка должна быть от 1 до 10'
             )
         return value
+
+    def validate(self, data):
+        if self.context['request'].method != 'POST':
+            return data
+
+        title_id = self.context['view'].kwargs.get('title_id')
+        author = self.context['request'].user
+        if Review.objects.filter(
+                author=author, title=title_id).exists():
+            raise ValidationError(
+                'Вы уже написали отзыв к этому произведению.'
+            )
+        return data
 
 
 class CommentSerializer(ModelSerializer):

@@ -12,7 +12,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from api.filters import TitleFilterSet
-from api.mixins import GetPostDeleteViewSet
+from api.mixins import GetPostDeleteViewSet, PreventPutMixin
 from api.permissions import (
     AdminOnlyPermission,
     IsModeratorAdminPermission, IsAdminOrReadOnly,
@@ -103,7 +103,7 @@ class CustomTokenObtainView(APIView):
         )
 
 
-class ReviewViewSet(ModelViewSet):
+class ReviewViewSet(PreventPutMixin, ModelViewSet):
     """
     ViewSet для получения списка отзывов на произведение,
     создания нового отзыва,
@@ -123,13 +123,8 @@ class ReviewViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
 
-    def update(self, request, *args, **kwargs):
-        if request.method == "PUT":
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
 
-
-class CommentViewSet(ModelViewSet):
+class CommentViewSet(PreventPutMixin, ModelViewSet):
     """
     ViewSet для получения списка комментариев на отзыв,
     создания нового комментария,
@@ -148,11 +143,6 @@ class CommentViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
-
-    def update(self, request, *args, **kwargs):
-        if request.method == "PUT":
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return super().update(request, *args, **kwargs)
 
 
 class CategoryViewSet(GetPostDeleteViewSet):
