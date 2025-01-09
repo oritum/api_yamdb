@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-
 from reviews.constants import (
     CATEGORY_NAME_LENGTH,
     CATEGORY_SLUG_LENGTH,
@@ -9,7 +8,6 @@ from reviews.constants import (
     GENRE_SLUG_LENGTH,
     TITLE_NAME_LENGTH,
 )
-
 
 User = get_user_model()
 
@@ -107,8 +105,7 @@ class Review(models.Model):
         verbose_name='Автор отзыва',
     )
     score = models.IntegerField(
-        verbose_name='Оценка',
-        choices=[(i, i) for i in range(1, 11)]
+        verbose_name='Оценка', choices=[(i, i) for i in range(1, 11)]
     )
     pub_date = models.DateTimeField(
         auto_now_add=True, verbose_name='Дата публикации'

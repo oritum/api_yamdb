@@ -4,17 +4,14 @@ from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from rest_framework.serializers import (
     CharField,
+    CurrentUserDefault,
     EmailField,
     ModelSerializer,
-    ValidationError,
     SlugRelatedField,
     ValidationError,
-    CurrentUserDefault,
-    IntegerField,
 )
-from django.db.models import Avg
 
-from reviews.models import User, Review, Comment, Title
+from reviews.models import Comment, Review, User
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 from users.validators import validate_username
 
@@ -102,14 +99,10 @@ class CustomTokenObtainSerializer(BaseUserSerializer):
 
 class ReviewSerializer(ModelSerializer):
     """Серилизатор для оценок произведений."""
-    title = SlugRelatedField(
-        slug_field='name',
-        read_only=True
-    )
+
+    title = SlugRelatedField(slug_field='name', read_only=True)
     author = SlugRelatedField(
-        slug_field='username',
-        default=CurrentUserDefault(),
-        read_only=True
+        slug_field='username', default=CurrentUserDefault(), read_only=True
     )
 
     class Meta:
@@ -119,26 +112,17 @@ class ReviewSerializer(ModelSerializer):
 
     def validate_score(self, value):
         if 0 > value > 10:
-            raise ValidationError(
-                'Оценка должна быть от 1 до 10'
-            )
+            raise ValidationError('Оценка должна быть от 1 до 10')
         return value
 
 
 class CommentSerializer(ModelSerializer):
     """Серилизатор для комментариев на отзыв."""
-    review = SlugRelatedField(
-        slug_field='text',
-        read_only=True
-    )
-    author = SlugRelatedField(
-        slug_field='username',
-        read_only=True
-    )
+
+    review = SlugRelatedField(slug_field='text', read_only=True)
+    author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
         model = Comment
         fields = ('text', 'author', 'pub_date', 'review')
         read_only_fields = ('author', 'review', 'pub_date')
-
-

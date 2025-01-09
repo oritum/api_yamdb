@@ -16,14 +16,14 @@ from api.permissions import (
 )
 from api.serializers import (
     AdminSerializer,
+    CommentSerializer,
     CustomTokenObtainSerializer,
     NotAdminSerializer,
-    SignupSerializer,
-    CommentSerializer,
     ReviewSerializer,
+    SignupSerializer,
 )
 from api.utils import send_confirmation_code
-from reviews.models import User, Review, Title
+from reviews.models import Review, Title, User
 
 
 class UsersManagementViewSet(ModelViewSet):
