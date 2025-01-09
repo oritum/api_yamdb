@@ -12,7 +12,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from api.filters import TitleFilterSet
-from api.mixins import GetPostDeleteViewSet, PreventPutMixin
+from api.mixins import GetPostDeleteViewSet
 from api.permissions import (
     AdminOnlyPermission,
     IsModeratorAdminPermission, IsAdminOrReadOnly,
@@ -103,7 +103,7 @@ class CustomTokenObtainView(APIView):
         )
 
 
-class ReviewViewSet(PreventPutMixin, ModelViewSet):
+class ReviewViewSet(ModelViewSet):
     """
     ViewSet для получения списка отзывов на произведение,
     создания нового отзыва,
@@ -113,6 +113,12 @@ class ReviewViewSet(PreventPutMixin, ModelViewSet):
 
     serializer_class = ReviewSerializer
     permission_classes = (IsModeratorAdminPermission, )
+    http_method_names = (
+        'get',
+        'post',
+        'patch',
+        'delete',
+    )
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -124,7 +130,7 @@ class ReviewViewSet(PreventPutMixin, ModelViewSet):
         serializer.save(author=self.request.user, title=self.get_title())
 
 
-class CommentViewSet(PreventPutMixin, ModelViewSet):
+class CommentViewSet(ModelViewSet):
     """
     ViewSet для получения списка комментариев на отзыв,
     создания нового комментария,
@@ -134,6 +140,12 @@ class CommentViewSet(PreventPutMixin, ModelViewSet):
 
     serializer_class = CommentSerializer
     permission_classes = (IsModeratorAdminPermission, )
+    http_method_names = (
+        'get',
+        'post',
+        'patch',
+        'delete',
+    )
 
     def get_review(self):
         return get_object_or_404(Review, id=self.kwargs.get('review_id'))
