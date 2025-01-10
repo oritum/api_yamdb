@@ -37,7 +37,7 @@ cd api_yamdb
 #### Шаг 2: Создание и активация виртуального окружения
 
 ```shell
-python3 -m venv venv
+python -m venv venv
 ```
 
 ```shell
@@ -47,7 +47,7 @@ source venv/bin/activate
 #### Шаг 3: Установка зависимостей
 
 ```shell
-python3 -m pip install --upgrade pip
+python -m pip install --upgrade pip
 ```
 
 ```shell
@@ -78,7 +78,13 @@ EMAIL_HOST_PASSWORD=
 DEFAULT_FROM_EMAIL=
 ```
 
-#### Шаг 6: Запуск сервера разработки
+#### Шаг 6: Импорт тестового контента из csv-файлов в базу данных
+
+```shell
+python manage.py import_data_from_csv
+```
+
+#### Шаг 7: Запуск сервера разработки
 
 ```shell
 python manage.py runserver
