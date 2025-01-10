@@ -15,7 +15,6 @@ from api.filters import TitleFilterSet
 from api.mixins import GetPostDeleteViewSet
 from api.permissions import (
     AdminOnlyPermission,
-    IsAuthorOrReadOnly,
     IsModeratorAdminPermission,
     IsAdminOrReadOnly,
 )
@@ -113,10 +112,17 @@ class ReviewViewSet(ModelViewSet):
     ViewSet для получения списка отзывов на произведение,
     создания нового отзыва,
     обновления и удаления существующего отзыва.
+    PUT-запросы запрещены.
     """
 
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
+    permission_classes = (IsModeratorAdminPermission, )
+    http_method_names = (
+        'get',
+        'post',
+        'patch',
+        'delete',
+    )
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -133,10 +139,17 @@ class CommentViewSet(ModelViewSet):
     ViewSet для получения списка комментариев на отзыв,
     создания нового комментария,
     обновления и удаления существующего комментария.
+    PUT-запросы запрещены.
     """
 
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
+    permission_classes = (IsModeratorAdminPermission, )
+    http_method_names = (
+        'get',
+        'post',
+        'patch',
+        'delete',
+    )
 
     def get_review(self):
         return get_object_or_404(Review, id=self.kwargs.get('review_id'))
