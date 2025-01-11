@@ -23,7 +23,7 @@ class Category(models.Model):
     slug = models.SlugField(
         'Слаг категории',
         max_length=CATEGORY_SLUG_LENGTH,
-        unique=True
+        unique=True,
     )
 
     class Meta:
@@ -66,7 +66,7 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         verbose_name='Жанр',
-        help_text='Названиек жанра',
+        help_text='Название жанра',
         related_name='titles',
         through='GenreTitle',
     )
@@ -111,8 +111,7 @@ class Review(models.Model):
         verbose_name='Автор отзыва',
     )
     score = models.IntegerField(
-        verbose_name='Оценка',
-        choices=[(i, i) for i in range(1, 11)]
+        verbose_name='Оценка', choices=[(i, i) for i in range(1, 11)]
     )
     pub_date = models.DateTimeField(
         auto_now_add=True, verbose_name='Дата публикации'

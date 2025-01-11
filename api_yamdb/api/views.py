@@ -15,8 +15,8 @@ from api.filters import TitleFilterSet
 from api.mixins import GetPostDeleteViewSet
 from api.permissions import (
     AdminOnlyPermission,
-    IsAuthorOrReadOnly,
-    IsModeratorAdminPermission, IsAdminOrReadOnly,
+    IsModeratorAdminPermission,
+    IsAdminOrReadOnly,
 )
 from api.serializers import (
     AdminSerializer,
@@ -24,11 +24,14 @@ from api.serializers import (
     NotAdminSerializer,
     SignupSerializer,
     CommentSerializer,
-    ReviewSerializer, CategorySerializer, GenreSerializer, TitleReadSerializer,
+    ReviewSerializer,
+    CategorySerializer,
+    GenreSerializer,
+    TitleReadSerializer,
     TitleCreateUpdateDeleteSerializer,
 )
 from api.utils import send_confirmation_code
-from reviews.models import User, Review, Title, Category, Genre, GenreTitle
+from reviews.models import User, Review, Title, Category, Genre
 
 
 class UsersManagementViewSet(ModelViewSet):
@@ -109,10 +112,17 @@ class ReviewViewSet(ModelViewSet):
     ViewSet для получения списка отзывов на произведение,
     создания нового отзыва,
     обновления и удаления существующего отзыва.
+    PUT-запросы запрещены.
     """
 
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
+    permission_classes = (IsModeratorAdminPermission, )
+    http_method_names = (
+        'get',
+        'post',
+        'patch',
+        'delete',
+    )
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -129,10 +139,17 @@ class CommentViewSet(ModelViewSet):
     ViewSet для получения списка комментариев на отзыв,
     создания нового комментария,
     обновления и удаления существующего комментария.
+    PUT-запросы запрещены.
     """
 
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthorOrReadOnly, IsModeratorAdminPermission)
+    permission_classes = (IsModeratorAdminPermission, )
+    http_method_names = (
+        'get',
+        'post',
+        'patch',
+        'delete',
+    )
 
     def get_review(self):
         return get_object_or_404(Review, id=self.kwargs.get('review_id'))
@@ -185,6 +202,13 @@ class TitleViewSet(ModelViewSet):
             return TitleReadSerializer
         return TitleCreateUpdateDeleteSerializer
 
-    def perform_create(self, serializer):
-        response = super().perform_create(serializer)
-        return response
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            TitleReadSerializer(
+                self.queryset.get(pk=serializer.instance.pk)
+            ).data,
+            status=status.HTTP_201_CREATED,
+        )
