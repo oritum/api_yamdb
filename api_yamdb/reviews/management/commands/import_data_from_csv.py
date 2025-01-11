@@ -4,16 +4,24 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 
-from reviews.models import User, Category, Genre, Title, Review, Comment
-
+from reviews.models import (
+    Category,
+    Comment,
+    Genre,
+    GenreTitle,
+    Review,
+    Title,
+    User,
+)
 
 MODEL_FILES = {
     User: 'users.csv',
     Category: 'category.csv',
     Genre: 'genre.csv',
     Title: 'titles.csv',
+    GenreTitle: 'genre_title.csv',
     Review: 'review.csv',
-    Comment: 'comments.csv'
+    Comment: 'comments.csv',
 }
 
 
