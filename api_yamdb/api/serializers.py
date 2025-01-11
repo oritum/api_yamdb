@@ -2,16 +2,19 @@
 
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.serializers import (
     CharField,
     CurrentUserDefault,
     EmailField,
     ModelSerializer,
     SlugRelatedField,
-    ValidationError,
+    CurrentUserDefault,
+    IntegerField,
+    ValidationError
 )
 
-from reviews.models import Comment, Review, User
+from reviews.models import User, Review, Comment, Category, Genre, Title
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 from users.validators import validate_username
 
@@ -101,19 +104,40 @@ class ReviewSerializer(ModelSerializer):
     """Серилизатор для оценок произведений."""
 
     title = SlugRelatedField(slug_field='name', read_only=True)
+    """
+    Серилизатор для оценок произведений, проверки валидности оценки
+    и единичного отзыва на произведение.
+    """
+    title = SlugRelatedField(
+        slug_field='name',
+        read_only=True
+    )
     author = SlugRelatedField(
         slug_field='username', default=CurrentUserDefault(), read_only=True
     )
 
     class Meta:
         model = Review
-        fields = ('text', 'author', 'score', 'pub_date', 'title')
-        read_only_fields = ('author', 'title', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
+        read_only_fields = ('id', 'author', 'title', 'pub_date')
 
     def validate_score(self, value):
         if 0 > value > 10:
             raise ValidationError('Оценка должна быть от 1 до 10')
         return value
+
+    def validate(self, data):
+        if self.context['request'].method != 'POST':
+            return data
+
+        title_id = self.context['view'].kwargs.get('title_id')
+        author = self.context['request'].user
+        if Review.objects.filter(
+                author=author, title=title_id).exists():
+            raise ValidationError(
+                'Вы уже написали отзыв к этому произведению.'
+            )
+        return data
 
 
 class CommentSerializer(ModelSerializer):
@@ -124,5 +148,89 @@ class CommentSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('text', 'author', 'pub_date', 'review')
-        read_only_fields = ('author', 'review', 'pub_date')
+        fields = ('id', 'text', 'author', 'pub_date', 'review')
+        read_only_fields = ('id', 'author', 'review', 'pub_date')
+
+
+class CategorySerializer(ModelSerializer):
+    """Сериализатор для категорий произведений."""
+
+    class Meta:
+        model = Category
+        lookup_field = 'slug'
+        fields = ('name', 'slug')
+
+
+class GenreSerializer(ModelSerializer):
+    """Сериализатор для жанров произведений."""
+
+    class Meta:
+        model = Genre
+        lookup_field = 'slug'
+        fields = ('name', 'slug')
+
+
+class TitleReadSerializer(ModelSerializer):
+    """Сериализатор для чтения произведений."""
+
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    rating = IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
+        )
+
+
+class TitleCreateUpdateDeleteSerializer(ModelSerializer):
+    """Сериализатор для создания, изменения и удаления произведений."""
+
+    category = SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all()
+    )
+    genre = SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        many=True,
+    )
+    rating = IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
+        )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['category'] = CategorySerializer(instance.category).data
+        representation['genre'] = GenreSerializer(
+            instance.genre, many=True
+        ).data
+        return representation
+
+    def validate_year(self, value):
+        if value > timezone.now().year:
+            raise ValidationError(
+                'Нельзя добавлять произведения, которые ' 'еще не вышли'
+            )
+        return value
+
+    def validate_genre(self, value):
+        if not value:
+            raise ValidationError('Поле genre не может быть пустым.')
+        return value
