@@ -11,7 +11,7 @@ from rest_framework.serializers import (
     SlugRelatedField,
     CurrentUserDefault,
     IntegerField,
-    ValidationError
+    ValidationError,
 )
 
 from reviews.models import User, Review, Comment, Category, Genre, Title
@@ -101,17 +101,12 @@ class CustomTokenObtainSerializer(BaseUserSerializer):
 
 
 class ReviewSerializer(ModelSerializer):
-    """Серилизатор для оценок произведений."""
-
-    title = SlugRelatedField(slug_field='name', read_only=True)
     """
     Серилизатор для оценок произведений, проверки валидности оценки
     и единичного отзыва на произведение.
     """
-    title = SlugRelatedField(
-        slug_field='name',
-        read_only=True
-    )
+
+    title = SlugRelatedField(slug_field='name', read_only=True)
     author = SlugRelatedField(
         slug_field='username', default=CurrentUserDefault(), read_only=True
     )
@@ -119,7 +114,12 @@ class ReviewSerializer(ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
-        read_only_fields = ('id', 'author', 'title', 'pub_date')
+        read_only_fields = (
+            'id',
+            'author',
+            'title',
+            'pub_date',
+        )
 
     def validate_score(self, value):
         if 0 > value > 10:
@@ -132,12 +132,16 @@ class ReviewSerializer(ModelSerializer):
 
         title_id = self.context['view'].kwargs.get('title_id')
         author = self.context['request'].user
-        if Review.objects.filter(
-                author=author, title=title_id).exists():
+        if Review.objects.filter(author=author, title=title_id).exists():
             raise ValidationError(
                 'Вы уже написали отзыв к этому произведению.'
             )
         return data
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('title', None)
+        return representation
 
 
 class CommentSerializer(ModelSerializer):
@@ -150,6 +154,11 @@ class CommentSerializer(ModelSerializer):
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date', 'review')
         read_only_fields = ('id', 'author', 'review', 'pub_date')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('review', None)
+        return representation
 
 
 class CategorySerializer(ModelSerializer):

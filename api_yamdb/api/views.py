@@ -116,7 +116,7 @@ class ReviewViewSet(ModelViewSet):
     """
 
     serializer_class = ReviewSerializer
-    permission_classes = (IsModeratorAdminPermission, )
+    permission_classes = (IsModeratorAdminPermission,)
     http_method_names = (
         'get',
         'post',
@@ -143,7 +143,7 @@ class CommentViewSet(ModelViewSet):
     """
 
     serializer_class = CommentSerializer
-    permission_classes = (IsModeratorAdminPermission, )
+    permission_classes = (IsModeratorAdminPermission,)
     http_method_names = (
         'get',
         'post',
@@ -151,10 +151,17 @@ class CommentViewSet(ModelViewSet):
         'delete',
     )
 
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
     def get_review(self):
-        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        title = self.get_title()
+        return get_object_or_404(
+            Review, id=self.kwargs.get('review_id'), title=title
+        )
 
     def get_queryset(self):
+        self.get_title()  # Проверяем существование Title
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
