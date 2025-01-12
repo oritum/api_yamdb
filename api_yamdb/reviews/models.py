@@ -2,11 +2,13 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from reviews.constants import (
-    CATEGORY_NAME_LENGTH,
-    CATEGORY_SLUG_LENGTH,
-    GENRE_NAME_LENGTH,
-    GENRE_SLUG_LENGTH,
-    TITLE_NAME_LENGTH,
+    CATEGORY_NAME_MAX_LENGTH,
+    CATEGORY_SLUG_MAX_LENGTH,
+    GENRE_NAME_MAX_LENGTH,
+    GENRE_SLUG_MAX_LENGTH,
+    NAME_PREVIEW_LENGTH,
+    TEXT_PREVIEW_LENGTH,
+    TITLE_NAME_MAX_LENGTH,
 )
 
 User = get_user_model()
@@ -15,12 +17,10 @@ User = get_user_model()
 class Category(models.Model):
     """Модель категории произведения."""
 
-    name = models.CharField(
-        'Категория', max_length=CATEGORY_NAME_LENGTH
-    )
+    name = models.CharField('Категория', max_length=CATEGORY_NAME_MAX_LENGTH)
     slug = models.SlugField(
         'Слаг категории',
-        max_length=CATEGORY_SLUG_LENGTH,
+        max_length=CATEGORY_SLUG_MAX_LENGTH,
         unique=True,
     )
 
@@ -29,17 +29,15 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return self.name
+        return self.name[:NAME_PREVIEW_LENGTH]
 
 
 class Genre(models.Model):
     """Модель жанра произведения."""
 
-    name = models.CharField(verbose_name='Жанр', max_length=GENRE_NAME_LENGTH)
+    name = models.CharField('Жанр', max_length=GENRE_NAME_MAX_LENGTH)
     slug = models.SlugField(
-        'Слаг жанра',
-        max_length=GENRE_SLUG_LENGTH,
-        unique=True
+        'Слаг жанра', max_length=GENRE_SLUG_MAX_LENGTH, unique=True
     )
 
     class Meta:
@@ -48,16 +46,16 @@ class Genre(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name
+        return self.name[:NAME_PREVIEW_LENGTH]
 
 
 class Title(models.Model):
     """Модель произведения."""
 
     name = models.CharField(
-        'Название произведения', max_length=TITLE_NAME_LENGTH
+        'Название произведения', max_length=TITLE_NAME_MAX_LENGTH
     )
-    year = models.IntegerField(verbose_name='Год выпуска произведения')
+    year = models.IntegerField('Год выпуска произведения')
     description = models.TextField(
         'Описание', blank=True, default='Нет описания'
     )
@@ -82,7 +80,7 @@ class Title(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name
+        return self.name[:NAME_PREVIEW_LENGTH]
 
 
 class GenreTitle(models.Model):
@@ -109,11 +107,9 @@ class Review(models.Model):
         verbose_name='Автор отзыва',
     )
     score = models.IntegerField(
-        verbose_name='Оценка', choices=[(i, i) for i in range(1, 11)]
+        'Оценка', choices=[(i, i) for i in range(1, 11)]
     )
-    pub_date = models.DateTimeField(
-        auto_now_add=True, verbose_name='Дата публикации'
-    )
+    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
         verbose_name = 'Отзыв'
@@ -130,7 +126,7 @@ class Review(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return f'{self.author}: {self.text}'
+        return f'{self.author}: {self.text[:TEXT_PREVIEW_LENGTH]}'
 
 
 class Comment(models.Model):
@@ -149,13 +145,11 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='Автор комментария',
     )
-    pub_date = models.DateTimeField(
-        auto_now_add=True, verbose_name='Дата публикации'
-    )
+    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return f'{self.author}: {self.text}'
+        return f'{self.author}: {self.text[:TEXT_PREVIEW_LENGTH]}'

@@ -11,32 +11,33 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api.base_views import CategoryGenreBaseViewSet, ReviewCommentBaseViewSet
 from api.filters import TitleFilterSet
-from api.mixins import GetPostDeleteViewSet
-from api.permissions import (
-    AdminOnlyPermission,
-    IsModeratorAdminPermission,
-    IsAdminOrReadOnly,
-)
+from api.permissions import AdminOnlyPermission, IsAdminOrReadOnly
 from api.serializers import (
     AdminSerializer,
     CommentSerializer,
     CustomTokenObtainSerializer,
-    NotAdminSerializer,
-    ReviewSerializer,
-    SignupSerializer,
-    CategorySerializer,
     GenreSerializer,
-    TitleReadSerializer,
+    NotAdminSerializer,
+    SignupSerializer,
     TitleCreateUpdateDeleteSerializer,
+    TitleReadSerializer,
 )
 from api.utils import send_confirmation_code
-from reviews.models import User, Review, Title, Category, Genre
+from reviews.models import Genre, Review, Title, User
 
 
 class UsersManagementViewSet(ModelViewSet):
     """
     ViewSet для управления пользователями.
+
+    Предоставляет следующие действия:
+    - Получение списка всех пользователей
+    - Создание нового пользователя
+    - Частичное обновление данных пользователя
+    - Удаление пользователя
+    - Получение или обновление данных текущего пользователя (/users/me/)
     """
 
     queryset = User.objects.all()
@@ -107,25 +108,14 @@ class CustomTokenObtainView(APIView):
         )
 
 
-class ReviewViewSet(ModelViewSet):
+class ReviewViewSet(ReviewCommentBaseViewSet):
     """
-    ViewSet для получения списка отзывов на произведение,
-    создания нового отзыва,
-    обновления и удаления существующего отзыва.
+    ViewSet для получения списка отзывов на произведение (доступно для всех),
+    создания нового отзыва (доступно только аутентифицированным пользователям),
+    обновления и удаления существующего отзыва (доступно только модераторам и
+    администраторам).
     PUT-запросы запрещены.
     """
-
-    serializer_class = ReviewSerializer
-    permission_classes = (IsModeratorAdminPermission, )
-    http_method_names = (
-        'get',
-        'post',
-        'patch',
-        'delete',
-    )
-
-    def get_title(self):
-        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
 
     def get_queryset(self):
         return self.get_title().reviews.all()
@@ -134,48 +124,39 @@ class ReviewViewSet(ModelViewSet):
         serializer.save(author=self.request.user, title=self.get_title())
 
 
-class CommentViewSet(ModelViewSet):
+class CommentViewSet(ReviewCommentBaseViewSet):
     """
-    ViewSet для получения списка комментариев на отзыв,
-    создания нового комментария,
-    обновления и удаления существующего комментария.
+    ViewSet для получения списка комментариев на отзыв (доступно для всех),
+    создания нового комментария (доступно только аутентифицированным
+    пользователям), обновления и удаления существующего комментария (доступно
+    только модераторам и администраторам).
     PUT-запросы запрещены.
     """
 
     serializer_class = CommentSerializer
-    permission_classes = (IsModeratorAdminPermission, )
-    http_method_names = (
-        'get',
-        'post',
-        'patch',
-        'delete',
-    )
 
     def get_review(self):
-        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        title = self.get_title()
+        return get_object_or_404(
+            Review, id=self.kwargs.get('review_id'), title=title
+        )
 
     def get_queryset(self):
+        self.get_title()
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
 
 
-class CategoryViewSet(GetPostDeleteViewSet):
+class CategoryViewSet(CategoryGenreBaseViewSet):
     """
     ViewSet для получения списка категорий (доступно для всех) и создания,
     изменения и удаления категории (доступно только админу).
     """
 
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    lookup_field = 'slug'
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
 
-
-class GenreViewSet(GetPostDeleteViewSet):
+class GenreViewSet(CategoryGenreBaseViewSet):
     """
     ViewSet для получения списка жанров (доступно для всех) и создания,
     изменения и удаления жанра (доступно только админу).
@@ -183,19 +164,24 @@ class GenreViewSet(GetPostDeleteViewSet):
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    lookup_field = 'slug'
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
 
 
 class TitleViewSet(ModelViewSet):
+    """
+    ViewSet для получения списка произведений (доступно для всех), создания,
+    изменения и удаления произведения (доступно только админу).
+    """
 
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilterSet
-    http_method_names = ('get', 'post', 'patch', 'delete')
+    http_method_names = (
+        'get',
+        'post',
+        'patch',
+        'delete',
+    )
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
