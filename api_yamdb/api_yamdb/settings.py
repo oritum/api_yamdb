@@ -1,3 +1,4 @@
+import os.path
 from datetime import timedelta
 from pathlib import Path
 
@@ -6,6 +7,8 @@ from decouple import config
 AUTH_USER_MODEL = 'users.CustomUser'
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+CSV_FILES_DIR = os.path.join(Path(__file__).resolve().parent.parent, 'static/data')
 
 SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
 
