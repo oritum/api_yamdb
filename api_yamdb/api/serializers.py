@@ -208,6 +208,7 @@ class TitleCreateUpdateDeleteSerializer(TitleBaseSerializer):
         slug_field='slug',
         queryset=Genre.objects.all(),
         many=True,
+        allow_empty=False
     )
 
     class Meta(TitleBaseSerializer.Meta):
