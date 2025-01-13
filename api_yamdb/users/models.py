@@ -5,8 +5,10 @@ from users.constants import (
     EMAIL_MAX_LENGTH,
     FIRST_NAME_MAX_LENGTH,
     LAST_NAME_MAX_LENGTH,
+    ROLE_ADMIN,
     ROLE_CHOICES,
     ROLE_MAX_LENGTH,
+    ROLE_MODERATOR,
     USERNAME_MAX_LENGTH,
 )
 from users.validators import validate_username
@@ -18,7 +20,6 @@ class CustomUser(AbstractUser):
     username = models.CharField(
         'Имя пользователя',
         unique=True,
-        blank=False,
         null=False,
         max_length=USERNAME_MAX_LENGTH,
         validators=[validate_username],
@@ -26,7 +27,6 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         'e-mail',
         unique=True,
-        blank=False,
         null=False,
         max_length=EMAIL_MAX_LENGTH,
     )
@@ -56,11 +56,11 @@ class CustomUser(AbstractUser):
 
     @property
     def is_moderator(self):
-        return self.role == 'moderator'
+        return self.role == ROLE_MODERATOR
 
     @property
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role == ROLE_ADMIN
 
     class Meta:
         verbose_name = 'Пользователь'
