@@ -1,6 +1,7 @@
 """Сериализаторы для приложения api."""
 
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.serializers import (
@@ -214,20 +215,11 @@ class TitleCreateUpdateDeleteSerializer(TitleBaseSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        representation['rating'] = (
+            instance.reviews.aggregate(Avg('score'))['score__avg'])
+
         representation['category'] = CategorySerializer(instance.category).data
         representation['genre'] = GenreSerializer(
             instance.genre, many=True
         ).data
         return representation
-
-    def validate_year(self, value):
-        if value > timezone.now().year:
-            raise ValidationError(
-                'Нельзя добавлять произведения, которые ' 'еще не вышли'
-            )
-        return value
-
-    def validate_genre(self, value):
-        if not value:
-            raise ValidationError('Поле genre не может быть пустым.')
-        return value

@@ -10,6 +10,7 @@ from reviews.constants import (
     TEXT_PREVIEW_LENGTH,
     TITLE_NAME_MAX_LENGTH,
 )
+from reviews.validators import validate_year
 
 User = get_user_model()
 
@@ -55,7 +56,10 @@ class Title(models.Model):
     name = models.CharField(
         'Название произведения', max_length=TITLE_NAME_MAX_LENGTH
     )
-    year = models.IntegerField('Год выпуска произведения')
+    year = models.SmallIntegerField(
+        'Год выпуска произведения',
+        validators=[validate_year],
+    )
     description = models.TextField(
         'Описание', blank=True, default='Нет описания'
     )
