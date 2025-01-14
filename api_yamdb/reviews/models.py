@@ -106,7 +106,7 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор отзыва',
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         'Оценка', choices=[(i, i) for i in range(1, 11)]
     )
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
