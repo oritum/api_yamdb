@@ -3,7 +3,7 @@ from django.utils import timezone
 
 
 def validate_year(value):
-    """Валидатор года выпуска выпуска произведения."""
+    """Валидатор года выпуска произведения."""
 
     if value > timezone.now().year:
         raise ValidationError(
