@@ -3,7 +3,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from rest_framework.serializers import (
     CharField,
     CurrentUserDefault,
