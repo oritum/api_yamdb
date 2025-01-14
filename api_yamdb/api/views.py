@@ -187,14 +187,3 @@ class TitleViewSet(ModelViewSet):
         if self.request.method == 'GET':
             return TitleReadSerializer
         return TitleCreateUpdateDeleteSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(
-            TitleReadSerializer(
-                self.queryset.get(pk=serializer.instance.pk)
-            ).data,
-            status=status.HTTP_201_CREATED,
-        )

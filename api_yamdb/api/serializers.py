@@ -1,8 +1,8 @@
 """Сериализаторы для приложения api."""
 
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from rest_framework.serializers import (
     CharField,
     CurrentUserDefault,
@@ -18,6 +18,7 @@ from api.base_serializers import (
     UserBaseSerializer,
 )
 from reviews.models import Category, Comment, Genre, Review, User
+from reviews.validators import validate_year
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 from users.validators import validate_username
 
@@ -207,6 +208,7 @@ class TitleCreateUpdateDeleteSerializer(TitleBaseSerializer):
         slug_field='slug',
         queryset=Genre.objects.all(),
         many=True,
+        allow_empty=False
     )
 
     class Meta(TitleBaseSerializer.Meta):
@@ -214,6 +216,9 @@ class TitleCreateUpdateDeleteSerializer(TitleBaseSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        representation['rating'] = (
+            instance.reviews.aggregate(Avg('score'))['score__avg'])
+
         representation['category'] = CategorySerializer(instance.category).data
         representation['genre'] = GenreSerializer(
             instance.genre, many=True
@@ -221,13 +226,4 @@ class TitleCreateUpdateDeleteSerializer(TitleBaseSerializer):
         return representation
 
     def validate_year(self, value):
-        if value > timezone.now().year:
-            raise ValidationError(
-                'Нельзя добавлять произведения, которые ' 'еще не вышли'
-            )
-        return value
-
-    def validate_genre(self, value):
-        if not value:
-            raise ValidationError('Поле genre не может быть пустым.')
-        return value
+        return validate_year(value)
