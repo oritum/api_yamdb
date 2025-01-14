@@ -131,7 +131,6 @@ class ReviewSerializer(ModelSerializer):
     def validate(self, data):
         if self.context['request'].method != 'POST':
             return data
-
         title_id = self.context['view'].kwargs.get('title_id')
         author = self.context['request'].user
         if Review.objects.filter(author=author, title=title_id).exists():
@@ -208,7 +207,7 @@ class TitleCreateUpdateDeleteSerializer(TitleBaseSerializer):
         slug_field='slug',
         queryset=Genre.objects.all(),
         many=True,
-        allow_empty=False
+        allow_empty=False,
     )
 
     class Meta(TitleBaseSerializer.Meta):
@@ -216,8 +215,9 @@ class TitleCreateUpdateDeleteSerializer(TitleBaseSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['rating'] = (
-            instance.reviews.aggregate(Avg('score'))['score__avg'])
+        representation['rating'] = instance.reviews.aggregate(Avg('score'))[
+            'score__avg'
+        ]
 
         representation['category'] = CategorySerializer(instance.category).data
         representation['genre'] = GenreSerializer(
