@@ -19,6 +19,7 @@ from api.base_serializers import (
     UserBaseSerializer,
 )
 from reviews.models import Category, Comment, Genre, Review, User
+from reviews.validators import validate_year
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 from users.validators import validate_username
 
@@ -224,3 +225,6 @@ class TitleCreateUpdateDeleteSerializer(TitleBaseSerializer):
             instance.genre, many=True
         ).data
         return representation
+
+    def validate_year(self, value):
+        return validate_year(value)
