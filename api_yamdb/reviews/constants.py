@@ -1,0 +1,15 @@
+"""Константы для моделей приложения reviews."""
+
+CATEGORY_NAME_MAX_LENGTH: int = 256
+
+CATEGORY_SLUG_MAX_LENGTH: int = 50
+
+GENRE_NAME_MAX_LENGTH: int = 256
+
+GENRE_SLUG_MAX_LENGTH: int = 50
+
+TITLE_NAME_MAX_LENGTH: int = 256
+
+TEXT_PREVIEW_LENGTH: int = 100
+
+NAME_PREVIEW_LENGTH: int = 50
